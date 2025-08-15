@@ -10,26 +10,26 @@
 bool sub_unsigned_called = false;
 
 
-// note : Å×½ºÆ®´Â assert.h Çì´õ¿¡ Á¤ÀÇµÈ µğ¹ö±ë¿ë ÇÔ¼ö assert¸¦ ÀÌ¿ë
-// ÁÖ¾îÁø Á¶°ÇÀÌ falseÀÎ °æ¿ì ÇÁ·Î±×·¥À» Áï½Ã Á¾·á½ÃÅ°°í ¿À·ù ¸Ş½ÃÁö Ãâ·Â
+// note : í…ŒìŠ¤íŠ¸ëŠ” assert.h í—¤ë”ì— ì •ì˜ëœ ë””ë²„ê¹…ìš© í•¨ìˆ˜ assertë¥¼ ì´ìš©
+// ì£¼ì–´ì§„ ì¡°ê±´ì´ falseì¸ ê²½ìš° í”„ë¡œê·¸ë¨ì„ ì¦‰ì‹œ ì¢…ë£Œì‹œí‚¤ê³  ì˜¤ë¥˜ ë©”ì‹œì§€ ì¶œë ¥
 
 
-// initÇÔ¼ö Å×½ºÆ®
+// inití•¨ìˆ˜ í…ŒìŠ¤íŠ¸
 void test_init_alloc(void) {
     BINT* b = NULL;  
-    init_bint(&b, 3);   // 3¿öµå¸¸Å­ ÇÒ´ç ¿äÃ»
+    init_bint(&b, 3);   // 3ì›Œë“œë§Œí¼ í• ë‹¹ ìš”ì²­
   
     
-    assert(b != NULL);  // b°¡ Á¤»óÀûÀ¸·Î ÃÊ±âÈ­ µÆ´Â°¡?
-    assert(b->val != NULL); // val Æ÷ÀÎÅÍ°¡ À¯È¿ÇÑ ¸Ş¸ğ¸®¸¦ °¡¸®Å°´ÂÁö? (malloc µîÀÌ ½ÇÆĞÇßÀ» °æ¿ì - Áï ¸Ş¸ğ¸® ÇÒ´çÀÌ µÇ¾ú´ÂÁö)
-    assert(b->alloc == 3);  // ¿äÃ»ÇÑ ÇÒ´ç Å©±â¿Í ÀÏÄ¡ÇÏ´Â°¡?
-    assert(b->wordlen == 0);  // wordlenÀÌ ¹Ù¸£°Ô ÃÊ±âÈ­ µÆ´Â°¡?
-    for (size_t i = 0; i < b->alloc; ++i) // ¹è¿­ ³»ºÎ °ªÀº 0À¸·Î ÃÊ±âÈ­ µÇ¾ú´ÂÁö?
+    assert(b != NULL);  // bê°€ ì •ìƒì ìœ¼ë¡œ ì´ˆê¸°í™” ëëŠ”ê°€?
+    assert(b->val != NULL); // val í¬ì¸í„°ê°€ ìœ íš¨í•œ ë©”ëª¨ë¦¬ë¥¼ ê°€ë¦¬í‚¤ëŠ”ì§€? (malloc ë“±ì´ ì‹¤íŒ¨í–ˆì„ ê²½ìš° - ì¦‰ ë©”ëª¨ë¦¬ í• ë‹¹ì´ ë˜ì—ˆëŠ”ì§€)
+    assert(b->alloc == 3);  // ìš”ì²­í•œ í• ë‹¹ í¬ê¸°ì™€ ì¼ì¹˜í•˜ëŠ”ê°€?
+    assert(b->wordlen == 0);  // wordlenì´ ë°”ë¥´ê²Œ ì´ˆê¸°í™” ëëŠ”ê°€?
+    for (size_t i = 0; i < b->alloc; ++i) // ë°°ì—´ ë‚´ë¶€ ê°’ì€ 0ìœ¼ë¡œ ì´ˆê¸°í™” ë˜ì—ˆëŠ”ì§€?
         assert(b->val[i] == 0);
     free_bint(&b);
 }
 
-// free_bint ÇÔ¼ö Å×½ºÆ®
+// free_bint í•¨ìˆ˜ í…ŒìŠ¤íŠ¸
 void test_free_bint_nullsafe(void) {
     BINT* b = NULL;
     init_bint(&b, 3); 
@@ -49,13 +49,13 @@ void test_free_bint_nullsafe(void) {
 }
 
 
-// ÀÌÁ¦ 16Áø¼ö ¹è¿­À»  bint±¸Á¶¿¡ ¸ÂÃç °¡Á®´ÙÁÖ±â ¶§¹®¿¡ º¯È¯°úÁ¤ÀÌ ÇÊ¿äÇÏÁö ¾ÊÀ½ (10Áø¼ö ÀÔ·Â½Ã »ç¿ë ¿¹Á¤)
-// uint64¸¦ bint·Î Ä³½ºÆÃ ÇÏ¿´À» ¶§ Á¤È®ÇÏ°Ô º¯È¯µÇ´Â °ÍÀÌ ¸Â´ÂÁö?
+// ì´ì œ 16ì§„ìˆ˜ ë°°ì—´ì„  bintêµ¬ì¡°ì— ë§ì¶° ê°€ì ¸ë‹¤ì£¼ê¸° ë•Œë¬¸ì— ë³€í™˜ê³¼ì •ì´ í•„ìš”í•˜ì§€ ì•ŠìŒ (10ì§„ìˆ˜ ì…ë ¥ì‹œ ì‚¬ìš© ì˜ˆì •)
+// uint64ë¥¼ bintë¡œ ìºìŠ¤íŒ… í•˜ì˜€ì„ ë•Œ ì •í™•í•˜ê²Œ ë³€í™˜ë˜ëŠ” ê²ƒì´ ë§ëŠ”ì§€?
 void test_set_bint_from_uint64(void) {
     BINT* b = NULL;
-    set_bint_from_uint64(&b, 0xFFFFFFFFFFFFFFFF); // uint64ÀÇ ÃÖ´ë°ªÀ¸·Î °æ°èºÎºĞ Ã¼Å©
-    assert(b->wordlen == 2);  // ÀÔ·Â°ªÀÌ 1¿öµå(32ºñÆ®)¸¦ ÃÊ°úÇÏ¸é wordlenÀº 2°¡ µÇ¾î¾ß ÇÔ
-    assert(b->val[0] == 0xFFFFFFFF); // ¹è¿­ÀÇ ÇÏÀ§/»óÀ§ ºÎºĞÀÎ val[0], val[1]Àº °¢°¢ ºĞÇÒµÈ °ªÀÎ 0xFFFFFFFF°¡ µÇ¾î¾ßÇÔ
+    set_bint_from_uint64(&b, 0xFFFFFFFFFFFFFFFF); // uint64ì˜ ìµœëŒ€ê°’ìœ¼ë¡œ ê²½ê³„ë¶€ë¶„ ì²´í¬
+    assert(b->wordlen == 2);  // ì…ë ¥ê°’ì´ 1ì›Œë“œ(32ë¹„íŠ¸)ë¥¼ ì´ˆê³¼í•˜ë©´ wordlenì€ 2ê°€ ë˜ì–´ì•¼ í•¨
+    assert(b->val[0] == 0xFFFFFFFF); // ë°°ì—´ì˜ í•˜ìœ„/ìƒìœ„ ë¶€ë¶„ì¸ val[0], val[1]ì€ ê°ê° ë¶„í• ëœ ê°’ì¸ 0xFFFFFFFFê°€ ë˜ì–´ì•¼í•¨
     assert(b->val[1] == 0xFFFFFFFF);
     free_bint(&b);
 }
@@ -63,85 +63,85 @@ void test_set_bint_from_uint64(void) {
 
 void test_set_bint_from_word_array_basic(void) {
     //BINT* b = NULL;
-    //WORD arr[] = { 0x00ABCDEF }; // ´ëÃæ ¿¬¼ÓµÈ °ªÀ¸·Î Å×½ºÆ® (1¿öµå·Î ÀúÀå)
+    //WORD arr[] = { 0x00ABCDEF }; // ëŒ€ì¶© ì—°ì†ëœ ê°’ìœ¼ë¡œ í…ŒìŠ¤íŠ¸ (1ì›Œë“œë¡œ ì €ì¥)
     //set_bint_from_word_array(&b, arr, 1);
-    //assert(b->wordlen == 1); // ¿öµå±æÀÌ Á¦´ë·Î µ¿ÀÛ?
-    //assert(b->val[0] == 0x00ABCDEF);  // ¹è¿­ÀÇ ÃÖÇÏÀ§¿¡ Á¤È®È÷ ÇÒ´çµÇ´ÂÁö?
-    //free_bint(&b); ½ÇÆĞÇÑ Å×½ºÆ®
+    //assert(b->wordlen == 1); // ì›Œë“œê¸¸ì´ ì œëŒ€ë¡œ ë™ì‘?
+    //assert(b->val[0] == 0x00ABCDEF);  // ë°°ì—´ì˜ ìµœí•˜ìœ„ì— ì •í™•íˆ í• ë‹¹ë˜ëŠ”ì§€?
+    //free_bint(&b); ì‹¤íŒ¨í•œ í…ŒìŠ¤íŠ¸
     BINT* b = NULL;
-    WORD arr[] = { 0x00ABCDEF, 0x01234567, 0xffffffff }; // ´ëÃæ ¿¬¼ÓµÈ °ªÀ¸·Î Å×½ºÆ® (1¿öµå·Î ÀúÀå)
+    WORD arr[] = { 0x00ABCDEF, 0x01234567, 0xffffffff }; // ëŒ€ì¶© ì—°ì†ëœ ê°’ìœ¼ë¡œ í…ŒìŠ¤íŠ¸ (1ì›Œë“œë¡œ ì €ì¥)
     set_bint_from_word_array(&b, arr, 3);
-    assert(b->wordlen == 3); // ¿öµå±æÀÌ Á¦´ë·Î µ¿ÀÛ?
-    assert(b->val[0] == 0x00ABCDEF);  // ¹è¿­ÀÇ ÃÖÇÏÀ§¿¡ Á¤È®È÷ ÇÒ´çµÇ´ÂÁö?
+    assert(b->wordlen == 3); // ì›Œë“œê¸¸ì´ ì œëŒ€ë¡œ ë™ì‘?
+    assert(b->val[0] == 0x00ABCDEF);  // ë°°ì—´ì˜ ìµœí•˜ìœ„ì— ì •í™•íˆ í• ë‹¹ë˜ëŠ”ì§€?
     assert(b->val[1] == 0x01234567);
     assert(b->val[2] == 0xffffffff);
     free_bint(&b);
 }
 
-// Àı´ñ°ª¿¡´ëÇÑ µ¡¼À (carry°¡ ¹ß»ıÇÏÁö ¾Ê´Â °æ¿ì)
-// ÀÏ´Ü ±âº»ÀûÀÎ µ¡¼ÀÀÌ ÀÛµ¿ÇÏ´ÂÁöºÎÅÍ º¸°í, carry¿¡ ´ëÇÑ ¿¬»êÀº º°µµ·Î ºĞ¸®
+// ì ˆëŒ“ê°’ì—ëŒ€í•œ ë§ì…ˆ (carryê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ” ê²½ìš°)
+// ì¼ë‹¨ ê¸°ë³¸ì ì¸ ë§ì…ˆì´ ì‘ë™í•˜ëŠ”ì§€ë¶€í„° ë³´ê³ , carryì— ëŒ€í•œ ì—°ì‚°ì€ ë³„ë„ë¡œ ë¶„ë¦¬
 void test_add_unsigned_basic(void) {
     BINT* a = NULL, * b = NULL, * res = NULL;
-    WORD aa[] = { 0x1 }; // ÇÇ¿¬»êÀÚ´Â °¢°¢ carry°¡ ¹ß»ıÇÏÁö ¾Êµµ·Ï ÀÛÀº °ª
-    WORD bb[] = { 0x2, 0x3, 0x4 };  // ¸Ş¸ğ¸® ÇÒ´çÀº ´õ ±ä ±æÀÌ¸¦ ±âÁØÀ¸·Î ÇÏ±â ¶§¹®¿¡
-    // µÎ ÇÇ¿¬»êÀÚ ¿öµå±æÀÌ¸¦ ´Ù¸£°Ô ¼³Á¤. ´Ü carry´Â ¹ß»ıÇÏÁö ¾Ê°Ô ÀÛÀº °ª
-    set_bint_from_word_array(&a, aa, 1); // °¢°¢ BINT ±¸Á¶Ã¼·Î Ä³½ºÆÃ
+    WORD aa[] = { 0x1 }; // í”¼ì—°ì‚°ìëŠ” ê°ê° carryê°€ ë°œìƒí•˜ì§€ ì•Šë„ë¡ ì‘ì€ ê°’
+    WORD bb[] = { 0x2, 0x3, 0x4 };  // ë©”ëª¨ë¦¬ í• ë‹¹ì€ ë” ê¸´ ê¸¸ì´ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•˜ê¸° ë•Œë¬¸ì—
+    // ë‘ í”¼ì—°ì‚°ì ì›Œë“œê¸¸ì´ë¥¼ ë‹¤ë¥´ê²Œ ì„¤ì •. ë‹¨ carryëŠ” ë°œìƒí•˜ì§€ ì•Šê²Œ ì‘ì€ ê°’
+    set_bint_from_word_array(&a, aa, 1); // ê°ê° BINT êµ¬ì¡°ì²´ë¡œ ìºìŠ¤íŒ…
     set_bint_from_word_array(&b, bb, 3);
     add_unsigned(&res, a, b);
-    // °ËÁõ
+    // ê²€ì¦
     assert(res != NULL);
-    assert(res->wordlen == 3);          // carry ¾øÀ½ ¡æ wordlenÀº bÀÇ ±æÀÌ(3)¿Í °°¾Æ¾ß ÇÔ
+    assert(res->wordlen == 3);          // carry ì—†ìŒ â†’ wordlenì€ bì˜ ê¸¸ì´(3)ì™€ ê°™ì•„ì•¼ í•¨
     
-    // ¹®Á¦ ¹ß»ı ÁöÁ¡
-    assert(res->val[0] == 0x3);         // 0x1 + 0x2 == 0x3 ¿¡¼­ assert °á°ú ¿À·ù
-    // ¹®Á¦ ¿øÀÎ °¡´É¼º 1 : a->val[i] ¶Ç´Â b->val[i]¿¡¼­ Àß¸øµÈ ÃÊ±âÈ­
-    // == set_bint_from_word_array()¿¡¼­ Àß¸ø °ªÀ» º¹»çÇÏ´Â °æ¿ìÀÎµ¥, »óÀ§ ¼ø¼­¿¡¼­ Å×½ºÆ®°á°ú Á¤»ó (±â°¢)
-    // ¹®Á¦ ¿øÀÎ °¡´É¼º 2: WORD¸¦ Àß¸øÁ¤ÀÇÇß´Ù? (32ºñÆ®°¡ ¾Æ´Ñ°æ¿ì) -> bint.h¿¡ Á¦´ë·Î Á¤È®È÷ Á¤ÀÇµÇ¾îÀÖÀ½. sizeof(WORD) = 4±îÁö È®ÀÎ (±â°¢)
-    // ¹è¿­ ³»ºÎ °ËÁõ :  
+    // ë¬¸ì œ ë°œìƒ ì§€ì 
+    assert(res->val[0] == 0x3);         // 0x1 + 0x2 == 0x3 ì—ì„œ assert ê²°ê³¼ ì˜¤ë¥˜
+    // ë¬¸ì œ ì›ì¸ ê°€ëŠ¥ì„± 1 : a->val[i] ë˜ëŠ” b->val[i]ì—ì„œ ì˜ëª»ëœ ì´ˆê¸°í™”
+    // == set_bint_from_word_array()ì—ì„œ ì˜ëª» ê°’ì„ ë³µì‚¬í•˜ëŠ” ê²½ìš°ì¸ë°, ìƒìœ„ ìˆœì„œì—ì„œ í…ŒìŠ¤íŠ¸ê²°ê³¼ ì •ìƒ (ê¸°ê°)
+    // ë¬¸ì œ ì›ì¸ ê°€ëŠ¥ì„± 2: WORDë¥¼ ì˜ëª»ì •ì˜í–ˆë‹¤? (32ë¹„íŠ¸ê°€ ì•„ë‹Œê²½ìš°) -> bint.hì— ì œëŒ€ë¡œ ì •í™•íˆ ì •ì˜ë˜ì–´ìˆìŒ. sizeof(WORD) = 4ê¹Œì§€ í™•ì¸ (ê¸°ê°)
+    // ë°°ì—´ ë‚´ë¶€ ê²€ì¦ :  
     // b->val[0] = 0x00000004
     // b->val[1] = 0x00000003
     // b->val[2] = 0x00000002
-    // ¹è¿­ÀÌ ¿ª¼øÀ¸·Î ÀúÀå µÇ°í ÀÖ¾úÀ½
-    // ÀÌ´Â set_bint_from_word_array()°¡ ¹è¿­À» ¿ª¼øÀúÀåÇÏ±â ¶§¹®À¸·Î,
-    // arr[]°¡ »óÀ§ ¿öµåºÎÅÍ ÀúÀåµÇ¾îÀÖ´Ù°í °¡Á¤ÇÑ ½Ç¼ö¿¡¼­ ±âÀÎÇÔ
-    // ÀÎÇ² ÆÄ¶ó¹ÌÅÍ¸¦ ¹®ÀÚ¿­¿¡¼­ ¿öµå ¹è¿­·Î ¹Şµµ·Ï ¹Ù²Ù¾ú´Âµ¥, ÀÌ ºÎºĞÀ» ¹ÌÃ³ ¹Ù²ÙÁö ¾ÊÀ½
+    // ë°°ì—´ì´ ì—­ìˆœìœ¼ë¡œ ì €ì¥ ë˜ê³  ìˆì—ˆìŒ
+    // ì´ëŠ” set_bint_from_word_array()ê°€ ë°°ì—´ì„ ì—­ìˆœì €ì¥í•˜ê¸° ë•Œë¬¸ìœ¼ë¡œ,
+    // arr[]ê°€ ìƒìœ„ ì›Œë“œë¶€í„° ì €ì¥ë˜ì–´ìˆë‹¤ê³  ê°€ì •í•œ ì‹¤ìˆ˜ì—ì„œ ê¸°ì¸í•¨
+    // ì¸í’‹ íŒŒë¼ë¯¸í„°ë¥¼ ë¬¸ìì—´ì—ì„œ ì›Œë“œ ë°°ì—´ë¡œ ë°›ë„ë¡ ë°”ê¾¸ì—ˆëŠ”ë°, ì´ ë¶€ë¶„ì„ ë¯¸ì²˜ ë°”ê¾¸ì§€ ì•ŠìŒ
     
-    // °¡·É 0x1234567890ABCDEF ÀÌ¶ó¸é »ç¶÷ÀÌ ÀĞ´Â ¹®ÀÚ¿­Àº 0x12345678ÀÌ ÃÖ»óÀ§¿öµåÀÓ.
-    // ±×·¡¼­ "¹®ÀÚ¿­ÀÎ °æ¿ì" ÀúÀå°úÁ¤Àº ¿ª¼øÀ¸·Î ÁøÇàµÇ¾î¾ßÇÔ.
-    //  val[0] == 0x90ABCDEF, val[1] == 0x12345678 ¿Í °°ÀÌ Ã¤¿öÁ³°í,
-    // ±×·¡¼­ ÇÏÀ§¿öµåºÎÅÍ ¿¬»êÇÏ´Â addÇÔ¼ö¿Í Ãæµ¹ÀÌ ÀÏ¾î³­ °ÍÀÓ.
-    // Á¤¸® -> input ÆÄ¶ó¹ÌÅÍ¸¦ ¹®ÀÚ¿­ÀÌ ¾Æ´Ñ ¿öµå ¹è¿­·Î ¹Ù²Ù´Â °úÁ¤¿¡¼­ bint·Î Ä³½ºÆÃÇÏ´Â ÇÔ¼ö´Â Á¦´ë·Î º¯°æµÇÁö ¾Ê¾Æ(¿©ÀüÈ÷ ¹®ÀÚ¿­±âÁØ ¿ª¼ø¹è¿­) Ãæµ¹ ¹ß»ı
-    // set_bint_from_word_array() Å×½ºÆ® ÇÔ¼ö ¼öÁ¤ ÇÊ¿ä -> ÀÔ·Â ¿öµå °³¼ö°¡ ÇÏ³ª¶ó¼­ °ËÁõ¿¡ ½ÇÆĞÇÑ°ÍÀÓ(ÇÒ´çµÇ´ÂÁö ¿©ºÎ¸¸ È®ÀÎÇÏ°í ¼ø¼­¸¦ È®ÀÎÇÏÁö ¾ÊÀ½)
+    // ê°€ë ¹ 0x1234567890ABCDEF ì´ë¼ë©´ ì‚¬ëŒì´ ì½ëŠ” ë¬¸ìì—´ì€ 0x12345678ì´ ìµœìƒìœ„ì›Œë“œì„.
+    // ê·¸ë˜ì„œ "ë¬¸ìì—´ì¸ ê²½ìš°" ì €ì¥ê³¼ì •ì€ ì—­ìˆœìœ¼ë¡œ ì§„í–‰ë˜ì–´ì•¼í•¨.
+    //  val[0] == 0x90ABCDEF, val[1] == 0x12345678 ì™€ ê°™ì´ ì±„ì›Œì¡Œê³ ,
+    // ê·¸ë˜ì„œ í•˜ìœ„ì›Œë“œë¶€í„° ì—°ì‚°í•˜ëŠ” addí•¨ìˆ˜ì™€ ì¶©ëŒì´ ì¼ì–´ë‚œ ê²ƒì„.
+    // ì •ë¦¬ -> input íŒŒë¼ë¯¸í„°ë¥¼ ë¬¸ìì—´ì´ ì•„ë‹Œ ì›Œë“œ ë°°ì—´ë¡œ ë°”ê¾¸ëŠ” ê³¼ì •ì—ì„œ bintë¡œ ìºìŠ¤íŒ…í•˜ëŠ” í•¨ìˆ˜ëŠ” ì œëŒ€ë¡œ ë³€ê²½ë˜ì§€ ì•Šì•„(ì—¬ì „íˆ ë¬¸ìì—´ê¸°ì¤€ ì—­ìˆœë°°ì—´) ì¶©ëŒ ë°œìƒ
+    // set_bint_from_word_array() í…ŒìŠ¤íŠ¸ í•¨ìˆ˜ ìˆ˜ì • í•„ìš” -> ì…ë ¥ ì›Œë“œ ê°œìˆ˜ê°€ í•˜ë‚˜ë¼ì„œ ê²€ì¦ì— ì‹¤íŒ¨í•œê²ƒì„(í• ë‹¹ë˜ëŠ”ì§€ ì—¬ë¶€ë§Œ í™•ì¸í•˜ê³  ìˆœì„œë¥¼ í™•ì¸í•˜ì§€ ì•ŠìŒ)
     
-    assert(res->val[1] == 0x3);         // a¿¡´Â word[1]ÀÌ ¾øÀ¸¹Ç·Î bÀÇ °ª 0x3 ±×´ë·Î
-    assert(res->val[2] == 0x4);         // »óµ¿
+    assert(res->val[1] == 0x3);         // aì—ëŠ” word[1]ì´ ì—†ìœ¼ë¯€ë¡œ bì˜ ê°’ 0x3 ê·¸ëŒ€ë¡œ
+    assert(res->val[2] == 0x4);         // ìƒë™
 
-    // ¸Ş¸ğ¸® Á¤¸®
+    // ë©”ëª¨ë¦¬ ì •ë¦¬
     free_bint(&a);
     free_bint(&b);
     free_bint(&res);
 }
-// ÀÌ¾î¼­, carry°¡ ¹ß»ıÇÏ´Â °æ¿ì
+// ì´ì–´ì„œ, carryê°€ ë°œìƒí•˜ëŠ” ê²½ìš°
 void test_add_unsigned_with_carry(void) {
     BINT* a = NULL, * b = NULL, * res = NULL;
     WORD aa[] = { 0xFFFFFFFF };
     WORD bb[] = { 0x1 };
     set_bint_from_word_array(&a, aa, 1); // 
     set_bint_from_word_array(&b, bb, 1);
-    add_unsigned(&res, a, b);   // maxlen == 1ÀÌ°í (´õ ±ä ±æÀÌ) carry¸¦ ´ëºñÇØ alloc = maxlen + 1 ( == 2)·Î ¸Ş¸ğ¸® ÇÒ´çµÇ¾î¾ß Á¤»ó
+    add_unsigned(&res, a, b);   // maxlen == 1ì´ê³  (ë” ê¸´ ê¸¸ì´) carryë¥¼ ëŒ€ë¹„í•´ alloc = maxlen + 1 ( == 2)ë¡œ ë©”ëª¨ë¦¬ í• ë‹¹ë˜ì–´ì•¼ ì •ìƒ
     assert(res->alloc == 2);
-    assert(res->wordlen == 2); // carry°¡ ¹ß»ıÇÏ¿© wordlenÀº Áõ°¡ÇØ¾ßÇÑ´Ù.
+    assert(res->wordlen == 2); // carryê°€ ë°œìƒí•˜ì—¬ wordlenì€ ì¦ê°€í•´ì•¼í•œë‹¤.
     assert(res->val[0] == 0x00000000);
     assert(res->val[1] == 0x00000001);
     free_bint(&a); free_bint(&b); free_bint(&res);
 }
 
-void test_add_bint(void) { // add_bint (ºÎÈ£ °áÁ¤ ÇÔ¼ö)
+void test_add_bint(void) { // add_bint (ë¶€í˜¸ ê²°ì • í•¨ìˆ˜)
     BINT* a = NULL, * b = NULL, * res = NULL;
     // extern bool sub_unsigned_called;
-    // ÇÔ¼ö¿¡µµ ¾ğ±ŞÇßÁö¸¸ ºÎÈ£°¡ ´Ù¸¥ ÇÇ¿¬»êÀÚÀÇ ¿¬»êÀº »¬¼ÀÀÓ.
-    // ¶§¹®¿¡ ÀÌ°æ¿ì »¬¼ÀÀÌ È£ÃâµÇ¹Ç·Î °á°ú°ª¸¸ º¸°í ÆÇ´ÜÇØ¼­´Â ¾ÈµÇ°í Àß °ÅÃÄ°¬´ÂÁö È®ÀÎÇÏ´Â º¯¼ö Ãß°¡ -> ±âº»°ªÀº false
-    // È£ÃâµÇ´Â¼ø°£ true·Î º¯È¯µÉ°ÍÀÓ. bint.c¿¡¼­µµ »ç¿ëÇÒ °ÍÀÌ¹Ç·Î externÀ¸·Î Àü¿ªº¯¼ö¸¦ °¡Á®´Ù ¾µ ¼ö ÀÖµµ·Ï ÇÔ
+    // í•¨ìˆ˜ì—ë„ ì–¸ê¸‰í–ˆì§€ë§Œ ë¶€í˜¸ê°€ ë‹¤ë¥¸ í”¼ì—°ì‚°ìì˜ ì—°ì‚°ì€ ëº„ì…ˆì„.
+    // ë•Œë¬¸ì— ì´ê²½ìš° ëº„ì…ˆì´ í˜¸ì¶œë˜ë¯€ë¡œ ê²°ê³¼ê°’ë§Œ ë³´ê³  íŒë‹¨í•´ì„œëŠ” ì•ˆë˜ê³  ì˜ ê±°ì³ê°”ëŠ”ì§€ í™•ì¸í•˜ëŠ” ë³€ìˆ˜ ì¶”ê°€ -> ê¸°ë³¸ê°’ì€ false
+    // í˜¸ì¶œë˜ëŠ”ìˆœê°„ trueë¡œ ë³€í™˜ë ê²ƒì„. bint.cì—ì„œë„ ì‚¬ìš©í•  ê²ƒì´ë¯€ë¡œ externìœ¼ë¡œ ì „ì—­ë³€ìˆ˜ë¥¼ ê°€ì ¸ë‹¤ ì“¸ ìˆ˜ ìˆë„ë¡ í•¨
     
     // a + b
     WORD aa1[] = { 0x2 };
@@ -150,8 +150,8 @@ void test_add_bint(void) { // add_bint (ºÎÈ£ °áÁ¤ ÇÔ¼ö)
     set_bint_from_word_array(&b, bb1, 1);
     add_bint(&res, a, b);
     assert(res->wordlen == 1);
-    assert(res->val[0] == 0x5); // µ¡¼ÀÀÌ Àß ¼öÇàµÇ¾ú´ÂÁö? (°£Á¢ÀûÀ¸·Î 2Â÷°ËÁõ)
-    assert(res->is_negative == false); // ºÎÈ£°¡ Àß °áÁ¤ µÇ¾ú´ÂÁö? 
+    assert(res->val[0] == 0x5); // ë§ì…ˆì´ ì˜ ìˆ˜í–‰ë˜ì—ˆëŠ”ì§€? (ê°„ì ‘ì ìœ¼ë¡œ 2ì°¨ê²€ì¦)
+    assert(res->is_negative == false); // ë¶€í˜¸ê°€ ì˜ ê²°ì • ë˜ì—ˆëŠ”ì§€? 
     free_bint(&a); free_bint(&b); free_bint(&res);
 
     // -a + -b = -(a + b)
@@ -163,8 +163,8 @@ void test_add_bint(void) { // add_bint (ºÎÈ£ °áÁ¤ ÇÔ¼ö)
     b->is_negative = true;
     add_bint(&res, a, b);
     assert(res->wordlen == 1);
-    assert(res->val[0] == 0x5); // ¿¬»ê °á°ú´Â Àı´ñ°ªÀ¸·Î
-    assert(res->is_negative == true); // ºÎÈ£ °áÁ¤ Á¤»óÀûÀÎÁö?
+    assert(res->val[0] == 0x5); // ì—°ì‚° ê²°ê³¼ëŠ” ì ˆëŒ“ê°’ìœ¼ë¡œ
+    assert(res->is_negative == true); // ë¶€í˜¸ ê²°ì • ì •ìƒì ì¸ì§€?
     free_bint(&a); free_bint(&b); free_bint(&res);
 
     // a + (-b) = a - b where a > b
@@ -179,7 +179,7 @@ void test_add_bint(void) { // add_bint (ºÎÈ£ °áÁ¤ ÇÔ¼ö)
     assert(res->wordlen == 1);
     assert(res->val[0] == 0x3);
     assert(res->is_negative == false);
-    assert(sub_unsigned_called == true);  // »¬¼ÀÀ» È£ÃâÇÏ´Â °æ¿ì ½ÇÁ¦·Î È£ÃâµÇ¾ú´ÂÁö È®ÀÎ
+    assert(sub_unsigned_called == true);  // ëº„ì…ˆì„ í˜¸ì¶œí•˜ëŠ” ê²½ìš° ì‹¤ì œë¡œ í˜¸ì¶œë˜ì—ˆëŠ”ì§€ í™•ì¸
     free_bint(&a); free_bint(&b); free_bint(&res);
 
     // -a + b = b - a where a < b
@@ -194,11 +194,11 @@ void test_add_bint(void) { // add_bint (ºÎÈ£ °áÁ¤ ÇÔ¼ö)
     assert(res->wordlen == 1);
     assert(res->val[0] == 0x3);
     assert(res->is_negative == false);
-    assert(sub_unsigned_called == true); // ¿ª½Ã »¬¼ÀÇÔ¼ö È£Ãâ¿©ºÎ È®ÀÎ
+    assert(sub_unsigned_called == true); // ì—­ì‹œ ëº„ì…ˆí•¨ìˆ˜ í˜¸ì¶œì—¬ë¶€ í™•ì¸
     free_bint(&a); free_bint(&b); free_bint(&res);
 }
 
-// ÀÌÇÏ µÎ ÇÔ¼ö´Â 10Áø¼ö ÀÔ·Â½Ã ÇÊ¿äÇØÁö´Â ÇÔ¼ö·Î °ËÁõÀÌ Ãß°¡·Î ÇÊ¿äÇÏ´Ù.
+// ì´í•˜ ë‘ í•¨ìˆ˜ëŠ” 10ì§„ìˆ˜ ì…ë ¥ì‹œ í•„ìš”í•´ì§€ëŠ” í•¨ìˆ˜ë¡œ ê²€ì¦ì´ ì¶”ê°€ë¡œ í•„ìš”í•˜ë‹¤.
 //void test_add_bint_small_carry_extend(void) {
 //    BINT* b = NULL;
 //    WORD bb[] = { 0xFFFFFFFF };
@@ -219,28 +219,28 @@ void test_add_bint(void) { // add_bint (ºÎÈ£ °áÁ¤ ÇÔ¼ö)
 //    free_bint(&b);
 //}
 
-// À¯Æ¿ÇÔ¼ö °ËÁõ
-// Ãâ·ÂÇÔ¼ö¿¡ ¾²¿´À¸³ª ¿©ÀüÈ÷ ³ª´°¼À µî¿¡ ÇÊ¿äÇÏ´Ù.
+// ìœ í‹¸í•¨ìˆ˜ ê²€ì¦
+// ì¶œë ¥í•¨ìˆ˜ì— ì“°ì˜€ìœ¼ë‚˜ ì—¬ì „íˆ ë‚˜ëˆ—ì…ˆ ë“±ì— í•„ìš”í•˜ë‹¤.
 void test_bint_is_zero_cases(void) {
     BINT* b = NULL;
-    set_bint_from_uint64(&b, 0); // b´Â val[0] == 0, wordlen == 1
-    // wordlenÀÌ 1ÀÎ °æ¿ìÀÌ¸é¼­µµ ¹è¿­ ³»ºÎ°ªÀÌ 0ÀÌ¾î¾ß 0ÀÓ.
-    assert(bint_is_zero(b));  // Á¤»óÀûÀÎ 0
+    set_bint_from_uint64(&b, 0); // bëŠ” val[0] == 0, wordlen == 1
+    // wordlenì´ 1ì¸ ê²½ìš°ì´ë©´ì„œë„ ë°°ì—´ ë‚´ë¶€ê°’ì´ 0ì´ì–´ì•¼ 0ì„.
+    assert(bint_is_zero(b));  // ì •ìƒì ì¸ 0
     b->val[0] = 1;
-    assert(!bint_is_zero(b)); // val[0] == 1ÀÌ±â ¶§¹®¿¡ false°¡ ¹İÈ¯µÇ¾î¾ß Á¤»ó(±×·¯¹Ç·Î !false ¸¦ assert)
+    assert(!bint_is_zero(b)); // val[0] == 1ì´ê¸° ë•Œë¬¸ì— falseê°€ ë°˜í™˜ë˜ì–´ì•¼ ì •ìƒ(ê·¸ëŸ¬ë¯€ë¡œ !false ë¥¼ assert)
     free_bint(&b);
 }
 
 
-void test_cmp_bint_basic(void) {  // Àı´ñ°ª compare °á°ú °ËÁõ
+void test_cmp_bint_basic(void) {  // ì ˆëŒ“ê°’ compare ê²°ê³¼ ê²€ì¦
     BINT* a = NULL, * b = NULL;
 
-    // ¿öµå±æÀÌ¸¸ °¡Áö°í ´ë¼Òºñ±³¸¦ ÇÒ ¼ö ÀÖ´Â °æ¿ì
+    // ì›Œë“œê¸¸ì´ë§Œ ê°€ì§€ê³  ëŒ€ì†Œë¹„êµë¥¼ í•  ìˆ˜ ìˆëŠ” ê²½ìš°
     WORD w1[] = { 0x1 };
-    WORD w2[] = { 0x1, 0x1 }; // ¼öÁ¤ -> 0x1, 0x0ÀÌ¾úÀ¸³ª ÀÌ°æ¿ì normalize¶§¹®¿¡ w1°ú w2°¡ °°¾ÆÁö°ÔµÊ
-    set_bint_from_word_array(&a, w1, 1); // ¿©±â¿¡¼­ normalize¸¦ ³»ºÎÈ£Ãâ
+    WORD w2[] = { 0x1, 0x1 }; // ìˆ˜ì • -> 0x1, 0x0ì´ì—ˆìœ¼ë‚˜ ì´ê²½ìš° normalizeë•Œë¬¸ì— w1ê³¼ w2ê°€ ê°™ì•„ì§€ê²Œë¨
+    set_bint_from_word_array(&a, w1, 1); // ì—¬ê¸°ì—ì„œ normalizeë¥¼ ë‚´ë¶€í˜¸ì¶œ
     set_bint_from_word_array(&b, w2, 2);
-    assert(cmp_bint(a, b) == -1);  // wordlen ºñ±³·Î b°¡ ´õ Å­
+    assert(cmp_bint(a, b) == -1);  // wordlen ë¹„êµë¡œ bê°€ ë” í¼
     free_bint(&a); free_bint(&b);
     
     // a == b
@@ -248,7 +248,7 @@ void test_cmp_bint_basic(void) {  // Àı´ñ°ª compare °á°ú °ËÁõ
     WORD wb[] = { 0xABCD };
     set_bint_from_word_array(&a, wa, 1);
     set_bint_from_word_array(&b, wb, 1);
-    assert(cmp_bint(a, b) == 0);  // a == b °°À¸¸é 0
+    assert(cmp_bint(a, b) == 0);  // a == b ê°™ìœ¼ë©´ 0
     free_bint(&a); free_bint(&b);
 
     // a < b
@@ -256,7 +256,7 @@ void test_cmp_bint_basic(void) {  // Àı´ñ°ª compare °á°ú °ËÁõ
     WORD wd[] = { 0xABCE };
     set_bint_from_word_array(&a, wc, 1);
     set_bint_from_word_array(&b, wd, 1);
-    assert(cmp_bint(a, b) == -1); // a < b ¿À¸¥ÂÊÀÌ Å©¸é -1
+    assert(cmp_bint(a, b) == -1); // a < b ì˜¤ë¥¸ìª½ì´ í¬ë©´ -1
     free_bint(&a); free_bint(&b);
 
     // a > b
@@ -264,25 +264,25 @@ void test_cmp_bint_basic(void) {  // Àı´ñ°ª compare °á°ú °ËÁõ
     WORD wf[] = { 0xABCD };
     set_bint_from_word_array(&a, we, 1);
     set_bint_from_word_array(&b, wf, 1);
-    assert(cmp_bint(a, b) == 1);  // a > b ¿ŞÂÊÀÌ Å©¸é 1
+    assert(cmp_bint(a, b) == 1);  // a > b ì™¼ìª½ì´ í¬ë©´ 1
     free_bint(&a); free_bint(&b);
 }
 
 void test_normalize_wordlen_trim(void) {
     BINT* b = NULL;
-    init_bint(&b, 5); // val[] = {0x1, 0x0, 0x0, 0x0, 0x0}, wordlen = 5 ·Î ÀâÀ»°ÍÀÓ
+    init_bint(&b, 5); // val[] = {0x1, 0x0, 0x0, 0x0, 0x0}, wordlen = 5 ë¡œ ì¡ì„ê²ƒì„
     b->val[0] = 0x1;
     b->val[1] = 0x0;
     b->val[2] = 0x0;
     b->val[3] = 0x0;
     b->val[4] = 0x0;
     b->wordlen = 5;
-    normalize_wordlen(b); // ÇÔ¼ö È£Ãâ°á°ú »óÀ§ ÇÊ¿ä¾ø´Â ¿öµå´Â ÀüºÎ trimmedµÇ°í wordlenÀº 1ÀÌµÇ¾î¾ßÇÔ
+    normalize_wordlen(b); // í•¨ìˆ˜ í˜¸ì¶œê²°ê³¼ ìƒìœ„ í•„ìš”ì—†ëŠ” ì›Œë“œëŠ” ì „ë¶€ trimmedë˜ê³  wordlenì€ 1ì´ë˜ì–´ì•¼í•¨
     assert(b->wordlen == 1);
     free_bint(&b);
 }
 
-void test_sub_unsigned_basic(void) { // »óÀ§¿öµå·Î borrow°¡ ¹ß»ıÇÏÁö ¾Ê´Â ±âº»ÀûÀÎ °æ¿ì
+void test_sub_unsigned_basic(void) { // ìƒìœ„ì›Œë“œë¡œ borrowê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ” ê¸°ë³¸ì ì¸ ê²½ìš°
     BINT* a = NULL, * b = NULL, * res = NULL;
 
     // a = 0x00001000 , b = 0x00000001 
@@ -293,8 +293,8 @@ void test_sub_unsigned_basic(void) { // »óÀ§¿öµå·Î borrow°¡ ¹ß»ıÇÏÁö ¾Ê´Â ±âº»Àû
 
     sub_unsigned(&res, a, b);
 
-    // result == 0x0FFF ÀÌ¾î¾ß.
-    assert(res->wordlen == 1); // ¿öµå ±æÀÌ´Â ¿©ÀüÈ÷ µ¿ÀÏÇÏ´Ù.
+    // result == 0x0FFF ì´ì–´ì•¼.
+    assert(res->wordlen == 1); // ì›Œë“œ ê¸¸ì´ëŠ” ì—¬ì „íˆ ë™ì¼í•˜ë‹¤.
     assert(res->val[0] == 0x0FFF);
 
     free_bint(&a); free_bint(&b); free_bint(&res);
@@ -311,8 +311,8 @@ void test_sub_unsigned_with_borrow(void) {
 
     sub_unsigned(&res, a, b);
 
-    // result = 0xFFFFFFFF (ÇÏÀ§ ¿öµå), 0x00000000 (»óÀ§ ¿öµå) ±â´ë
-    assert(res->wordlen == 1);           // »óÀ§ ¿öµå´Â 0ÀÌ µÇ¾î Á¤»óÀûÀ¸·Î Àß·Á¾ßÇÑ´Ù.
+    // result = 0xFFFFFFFF (í•˜ìœ„ ì›Œë“œ), 0x00000000 (ìƒìœ„ ì›Œë“œ) ê¸°ëŒ€
+    assert(res->wordlen == 1);           // ìƒìœ„ ì›Œë“œëŠ” 0ì´ ë˜ì–´ ì •ìƒì ìœ¼ë¡œ ì˜ë ¤ì•¼í•œë‹¤.
     assert(res->val[0] == 0xFFFFFFFF);   // 2^32 - 1 = 0xFFFFFFFF
 
     free_bint(&a); free_bint(&b); free_bint(&res);
