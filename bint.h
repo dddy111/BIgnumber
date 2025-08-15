@@ -3,7 +3,7 @@
 
 #ifdef _MSC_VER
 #include <BaseTsd.h>
-typedef SSIZE_T ssize_t;  // vs studio¿¡¼­´Â ssize_tÀÎ½ÄÀ» ¸øÇØ¼­ ÀÌ·¸°Ô Ãß°¡ÇØ¾ßÇÑ´Ù°í ÇÔ.
+typedef SSIZE_T ssize_t;  // vs studioì—ì„œëŠ” ssize_tì¸ì‹ì„ ëª»í•´ì„œ ì´ë ‡ê²Œ ì¶”ê°€í•´ì•¼í•œë‹¤ê³  í•¨.
 #else
 #include <sys/types.h>  // ssize_t for POSIX
 #endif
@@ -12,42 +12,44 @@ typedef SSIZE_T ssize_t;  // vs studio¿¡¼­´Â ssize_tÀÎ½ÄÀ» ¸øÇØ¼­ ÀÌ·¸°Ô Ãß°¡ÇØ¾
 #include <stddef.h>
 #include <stdbool.h>
 
-extern bool sub_unsigned_called; // »¬¼ÀÇÔ¼ö È£Ãâ È®ÀÎ
+extern bool sub_unsigned_called; // ëº„ì…ˆí•¨ìˆ˜ í˜¸ì¶œ í™•ì¸
 
-typedef uint32_t WORD; // ÀÏ´ÜÀº 32ºñÆ® ¿öµå¸¸ Ãë±ŞÇÕ´Ï´Ù.
+typedef uint32_t WORD; // ì¼ë‹¨ì€ 32ë¹„íŠ¸ ì›Œë“œë§Œ ì·¨ê¸‰í•©ë‹ˆë‹¤.
 
 typedef struct {
-    bool is_negative;   // ºÎÈ£
-    size_t wordlen;   // À¯È¿ÇÑ ½ÇÁ¦ ¿öµå±æÀÌ(¾Õ¿¡ ºÑ´Â 0°°Àº µ¥ÀÌÅÍ Á¦¿Ü)
-    size_t alloc;      // ÇÒ´çµÈ ÃÑ ¿öµå¼ö
-    WORD* val;         // ¿öµå ¹è¿­ 
+    bool is_negative;   // ë¶€í˜¸
+    size_t wordlen;   // ìœ íš¨í•œ ì‹¤ì œ ì›Œë“œê¸¸ì´(ì•ì— ë¶‡ëŠ” 0ê°™ì€ ë°ì´í„° ì œì™¸)
+    size_t alloc;      // í• ë‹¹ëœ ì´ ì›Œë“œìˆ˜
+    WORD* val;         // ì›Œë“œ ë°°ì—´ 
 } BINT;
 
 
-// ±âº» ¸Ş¸ğ¸® °ü¸® ¹× ¼³Á¤
+// ê¸°ë³¸ ë©”ëª¨ë¦¬ ê´€ë¦¬ ë° ì„¤ì •
 
 void init_bint(BINT** p_bint, size_t alloc_words);
 void free_bint(BINT** p_bint);
 
 void set_bint_from_uint64(BINT** p_bint, uint64_t input);
 void set_bint_from_word_array(BINT** p_bint, const WORD* arr, size_t len);
-
-// Ãâ·Â
+void set_bint_from_str10(BINT** p_bint, const char* str);
+void set_bint_from_str16(BINT** p_bint, const char* s);
+void set_bint_from_str(BINT** p_bint, const char* s);
+// ì¶œë ¥
 void print_bint_hex(const BINT* bint);
 
-// ¿¬»ê
+// ì—°ì‚°
 void add_bint(BINT** result, const BINT* a, const BINT* b);
 void add_unsigned(BINT** result, const BINT* a, const BINT* b);
 
 void sub_unsigned(BINT** result, const BINT* a, const BINT* b);
 
-// Ãâ·ÂÇÔ¼ö¸¦ À§ÇÑ ³»ºÎ ÇÔ¼ö
+// ì¶œë ¥í•¨ìˆ˜ë¥¼ ìœ„í•œ ë‚´ë¶€ í•¨ìˆ˜
 void mul_bint_small(BINT* b, uint32_t m);
 void add_bint_small(BINT* b, uint32_t a);
 
-// ³ª¸ÓÁö À¯Æ¿ÇÔ¼ö
-int cmp_bint(const BINT* a, const BINT* b);        // Àı´ñ°ª ºñ±³
-bool bint_is_zero(const BINT* b);                  // 0 ¿©ºÎ È®ÀÎ
+// ë‚˜ë¨¸ì§€ ìœ í‹¸í•¨ìˆ˜
+int cmp_bint(const BINT* a, const BINT* b);        // ì ˆëŒ“ê°’ ë¹„êµ
+bool bint_is_zero(const BINT* b);                  // 0 ì—¬ë¶€ í™•ì¸
 void normalize_wordlen(BINT* b);
 
 #endif
