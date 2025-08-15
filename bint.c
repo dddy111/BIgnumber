@@ -1,4 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -141,30 +141,28 @@ void print_bint_hex(const BINT* bint) {
 
 
 
-//// scanf같은 함수로 char 형태로 받아서(10진수) bint로 캐스팅할 예정
-//// 문자열을 bint로 캐스팅하는 함수임. 입력 형태를 10진수로 요하는 경우 주석을 풀어 사용할 예정
-//void set_bint_from_str10(BINT** p_bint, const char* str) {  // init을 호출해서 사용할거기 때문에 구조체 주소도 같이준다.
-//    if (p_bint == NULL || str == NULL) {  // NULL 역참조케이스 예외처리
-//        fprintf(stderr, "Error: NULL pointer in set_bint_from_str10.\n");
-//        exit(1);
-//    }
-//
-//    size_t alloc = calc_alloc_from_str10(str);
-//    init_bint(p_bint, alloc); // init으로 초기화하면 val과 wordlen 모두 0
-//    (*p_bint)->val[0] = 0;  
-//    (*p_bint)->wordlen = 1;  // 그런데 wordlen == 0이면  bint_is_zero (wordlen==1 && val[0]==0)가 False가 되어 add_bint_small함수가 잘못된 경로로 빠진다고함) -gpt => 추가 이해 필요
-//    size_t len = strlen(str);
-//
-//    for (size_t i = 0; i < len; ++i) {
-//        if (str[i] < '0' || str[i] > '9') continue;  // i번째 문자가 10진수 숫자 0~9에 포함되는지 확인  => 공백/특수문자 필터링
-//        mul_bint_small(*p_bint, 10);  // 자릿수가 늘어나면 10을 곱해주기
-//        add_bint_small(*p_bint, str[i] - '0');  // 자릿수별 덧셈 -> char는 정수형으로 캐스팅하기위해 아스키 이용 (기존값에 누적되어 더해짐)
-//        // 0의 아스키코드는 48이고 1은 49... 9는 57까지 차례로 정의되어있음.
-//        // 문자열끼리의 연산은 아스키코드의 연산이고 같은 간격으로 정의되어있기 때문에 빼주면 정수로 캐스팅된다.
-//        // ex) '9' - '0' == 57 - 48 == 9(정수)
-//    }
-//}
-// 
+void set_bint_from_str10(BINT** p_bint, const char* str) {  // init을 호출해서 사용할거기 때문에 구조체 주소도 같이준다.
+    if (p_bint == NULL || str == NULL) {  // NULL 역참조케이스 예외처리
+        fprintf(stderr, "Error: NULL pointer in set_bint_from_str10.\n");
+        exit(1);
+    }
+
+    size_t alloc = calc_alloc_from_str10(str);
+    init_bint(p_bint, alloc); // init으로 초기화하면 val과 wordlen 모두 0
+    (*p_bint)->val[0] = 0;  
+    (*p_bint)->wordlen = 1;  // 그런데 wordlen == 0이면  bint_is_zero (wordlen==1 && val[0]==0)가 False가 되어 add_bint_small함수가 잘못된 경로로 빠진다고함) -gpt => 추가 이해 필요
+    size_t len = strlen(str);
+
+    for (size_t i = 0; i < len; ++i) {
+        if (str[i] < '0' || str[i] > '9') continue;  // i번째 문자가 10진수 숫자 0~9에 포함되는지 확인  => 공백/특수문자 필터링
+        mul_bint_small(*p_bint, 10);  // 자릿수가 늘어나면 10을 곱해주기
+        add_bint_small(*p_bint, str[i] - '0');  // 자릿수별 덧셈 -> char는 정수형으로 캐스팅하기위해 아스키 이용 (기존값에 누적되어 더해짐)
+        // 0의 아스키코드는 48이고 1은 49... 9는 57까지 차례로 정의되어있음.
+        // 문자열끼리의 연산은 아스키코드의 연산이고 같은 간격으로 정의되어있기 때문에 빼주면 정수로 캐스팅된다.
+        // ex) '9' - '0' == 57 - 48 == 9(정수)
+    }
+}
+
 
 
 // 16진수를 bint로 캐스팅하는 함수임. 10진수는 보류
@@ -187,6 +185,86 @@ void set_bint_from_word_array(BINT** p_bint, const WORD* arr, size_t len) {
 
     // 0 정리
     normalize_wordlen(b);
+}
+
+// 문자열(16진수) 받아서 bint로
+void set_bint_from_str16(BINT** p_bint, const char* s) {
+    if (p_bint == NULL || s == NULL) {
+        fprintf(stderr, "Error: NULL in set_bint_from_str16.\n");
+        exit(1);
+    }
+    // s의 타입이 const char* 이므로, s++는 1바이트(= sizeof(char)) 앞으로 이동할 것임
+    
+    // 넘기기전에 정리해주기
+    while (*s == ' ' || *s == '\t' || *s == '\n') ++s; // 주소값을 계속해서 증가시켜 비공백문자를 가리키게함
+
+    // 접두어도 무시
+    if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) s += 2;
+    
+
+    // 선행 0 제거 (전체가 0이면 한 자리 유지)
+    const char* p = s;  // s 그대로 재사용
+    while (*p == '0') ++p;
+    if (*p == '\0') { // 0...만 있는 경우
+        set_bint_from_uint64(p_bint, 0);
+        return;
+    }
+    s = p; // 가리키는 주소 갱신 (나중에 재사용할 것이므로)
+
+    // 길이/워드수 계산
+    size_t hex_len = strlen(s);
+    size_t words = (hex_len + 7) / 8; // 초과한만큼 추가 워드를 더 할당해서 저장해야하니 패딩
+
+    WORD* arr = (WORD*)calloc(words, sizeof(WORD));
+    if (!arr) { fprintf(stderr, "alloc fail\n"); exit(1); }
+
+    // 뒤에서부터 8비트씩 끊어 리틀엔디언 WORD 배열 구성 (즉 i = 0이 최하위워드가 됨)
+    for (size_t i = 0; i < words; ++i) {
+        size_t start_idx = (hex_len > (i + 1) * 8) ? (hex_len - (i + 1) * 8) : 0; // 잘라낼 부분의 시작 인덱스
+        // 맨 앞 블록이 8글자 미만이면 시작 인덱스를 0으로 설정
+        size_t chunk_len = (hex_len > i * 8) ? (hex_len - i * 8) - start_idx : 0; //“이번에 잘라낼 16진수 조각이 몇 글자인가(최대 8)?”
+        // 구간은 [start_idx, start_idx + chunk_len) 이렇게 될 것. 
+        // s="123456789ABC" (hex_len=12) 이면
+        // i = 0 : start_idx = 4, chunk_len=8  -> "56789ABC" → arr[0](LSW)
+        // i = 1 : start_idx = 0, chunk_len = 4 -> "1234" → arr[1](MSW)
+        
+        char part[9] = { 0 }; // 32비트 16진수의 8글자 + '\0' 으로 9칸
+        memcpy(part, s + start_idx, chunk_len);
+        // void *memcpy(void *dest, const void *src, size_t n);로부터
+        // 시작위치 : src, 실제길이 n, 
+        arr[i] = (WORD)strtoul(part, NULL, 16); // "string to unsigned long" 정수로 캐스팅
+    }
+
+    set_bint_from_word_array(p_bint, arr, words); 
+    free(arr);
+}
+
+// 문자열을 보고 16진/10진 자동 판별 -> 이건 제대로 동작하는지 모르겠음.. 나중에 확인할 것
+void set_bint_from_str(BINT** p_bint, const char* s) {
+    if (p_bint == NULL || s == NULL) {
+        fprintf(stderr, "Error: NULL in set_bint_from_str.\n");
+        exit(1);
+    }
+
+    // 공백 무시하기
+    while (*s == ' ' || *s == '\t' || *s == '\n') ++s;
+
+    // 0x/0X 접두사면 16진
+    if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
+        set_bint_from_str16(p_bint, s);
+        return;
+    }
+
+    // 16진 문자가 하나라도 있으면 16진으로 간주
+    for (const char* q = s; *q; ++q) {
+        if ((*q >= 'A' && *q <= 'F') || (*q >= 'a' && *q <= 'f')) {
+            set_bint_from_str16(p_bint, s);
+            return;
+        }
+    }
+
+    // 그 외는 10진 처리(있는거 갖다 붙임)
+    set_bint_from_str10(p_bint, s); 
 }
 
 
@@ -263,58 +341,57 @@ void add_unsigned(BINT** result, const BINT* a, const BINT* b) {
     }
 }
 
-///// 출력함수 자릿수 덧셈부분(BINT + epsilon)  note : BINT + BINT 연산이 아님
-//  기존에 input 파라미터가 문자열이었으므로 캐스팅하는 과정에서 필요했으나 입력인자를 바꾸어 더이상 필요하지 않음. 10진수 입력시 필요
-//void add_bint_small(BINT* b, uint32_t addend) {   // 매우 큰 수인 b에 가감수 addend자체를 더함
-//    if (b == NULL) {
-//        fprintf(stderr, "Error: NULL BINT pointer in add_bint_small.\n");
-//        exit(1);
-//    }
-//    // b->val이 NULL일 수도 있으므로, 최소 1 워드는 할당되어 있어야 함.
-//    if (b->val == NULL || b->alloc == 0) {
-//        fprintf(stderr, "Error: BINT not properly initialized (val or alloc is NULL/0) in add_bint_small.\n");
-//        exit(1);
-//    }
-//
-//    // 누적값도 0이고 더할 값도 0이면 이미 0이라는 값을 가지고 있기때문에 연산필요가 없다.
-//    if (bint_is_zero(b) && addend == 0) {
-//        return;
-//    }
-//    // 누적값은 0인데 더할 값은 0이 아니면, 즉 연산을 처음 시작하는경우 초기설정
-//    else if (bint_is_zero(b)) {
-//        set_bint_from_uint64(&b, addend); // 기본설정해주는 함수
-//        b->is_negative = false; // 0에서 시작하여 addend를 더했으므로 양수
-//        return;
-//    }
-//
-//    uint64_t sum = (uint64_t)b->val[0] + addend;  // 최하위워드에 addend를 더함
-//    b->val[0] = (WORD)(sum & 0xFFFFFFFF);  // carry가 발생했을 수도 있으니 32비트만큼 추출하고
-//    uint64_t carry = sum >> 32;  // 나머지 비트인 carry 비트는 따로 떼어냄
-//
-//    // 다른 인덱스는 carry를 전달해주기만 하면 되므로 간단해진다.
-//    size_t i = 1;  // 위에서 val[0]은 연산이 되었으니 인덱스는 1부터 시작
-//    while (carry && i < b->wordlen) { // 이전 자리에서 발생한 carry는 다음 자리로 전달되어야함.
-//        // carry == 0이면 더 이상 전달할 carry가 없기 때문에 종료. 인덱스가 유효 범위를 벗어나도 종료.
-//        sum = (uint64_t)b->val[i] + carry;
-//        b->val[i] = (WORD)(sum & 0xFFFFFFFF);
-//        carry = sum >> 32;
-//        ++i;
-//    } // (현재 값 + carry) -> 32비트만 추출하고, carry는 다시 다음 워드로. 똑같음.
-//
-//    if (carry > 0) { // 만약 루프가 다 끝났는데도 carry가 남아있다?
-//        if (b->wordlen == b->alloc) { // 현재 할당된 공간이 부족하면
-//            WORD* new_val = (WORD*)realloc(b->val, sizeof(WORD) * (b->alloc + 1));
-//            // realloc 실패 시 처리
-//            if (new_val == NULL) {
-//                fprintf(stderr, "Error: Failed to reallocate memory in add_bint_small.\n");
-//                exit(1);
-//            }
-//            b->val = new_val; // realloc 성공 시 새 주소 할당
-//            b->alloc++; // 할당한 워드 총 개수가 늘어났으니 갱신
-//        }
-//        b->val[b->wordlen++] = (WORD)carry; // 메모리가 충분하다면 바로 최상위 인덱스에 넣어주면 된다.
-//    }
-//}
+
+void add_bint_small(BINT* b, uint32_t addend) {   // 매우 큰 수인 b에 가감수 addend자체를 더함
+   if (b == NULL) {
+        fprintf(stderr, "Error: NULL BINT pointer in add_bint_small.\n");
+        exit(1);
+    }
+    // b->val이 NULL일 수도 있으므로, 최소 1 워드는 할당되어 있어야 함.
+    if (b->val == NULL || b->alloc == 0) {
+        fprintf(stderr, "Error: BINT not properly initialized (val or alloc is NULL/0) in add_bint_small.\n");
+        exit(1);
+    }
+
+    // 누적값도 0이고 더할 값도 0이면 이미 0이라는 값을 가지고 있기때문에 연산필요가 없다.
+    if (bint_is_zero(b) && addend == 0) {
+        return;
+    }
+    // 누적값은 0인데 더할 값은 0이 아니면, 즉 연산을 처음 시작하는경우 초기설정
+    else if (bint_is_zero(b)) {
+        set_bint_from_uint64(&b, addend); // 기본설정해주는 함수
+        b->is_negative = false; // 0에서 시작하여 addend를 더했으므로 양수
+        return;
+    }
+
+    uint64_t sum = (uint64_t)b->val[0] + addend;  // 최하위워드에 addend를 더함
+    b->val[0] = (WORD)(sum & 0xFFFFFFFF);  // carry가 발생했을 수도 있으니 32비트만큼 추출하고
+    uint64_t carry = sum >> 32;  // 나머지 비트인 carry 비트는 따로 떼어냄
+
+    // 다른 인덱스는 carry를 전달해주기만 하면 되므로 간단해진다.
+    size_t i = 1;  // 위에서 val[0]은 연산이 되었으니 인덱스는 1부터 시작
+    while (carry && i < b->wordlen) { // 이전 자리에서 발생한 carry는 다음 자리로 전달되어야함.
+        // carry == 0이면 더 이상 전달할 carry가 없기 때문에 종료. 인덱스가 유효 범위를 벗어나도 종료.
+        sum = (uint64_t)b->val[i] + carry;
+        b->val[i] = (WORD)(sum & 0xFFFFFFFF);
+        carry = sum >> 32;
+        ++i;
+    } // (현재 값 + carry) -> 32비트만 추출하고, carry는 다시 다음 워드로. 똑같음.
+
+    if (carry > 0) { // 만약 루프가 다 끝났는데도 carry가 남아있다?
+        if (b->wordlen == b->alloc) { // 현재 할당된 공간이 부족하면
+            WORD* new_val = (WORD*)realloc(b->val, sizeof(WORD) * (b->alloc + 1));
+            // realloc 실패 시 처리
+            if (new_val == NULL) {
+                fprintf(stderr, "Error: Failed to reallocate memory in add_bint_small.\n");
+                exit(1);
+            }
+            b->val = new_val; // realloc 성공 시 새 주소 할당
+            b->alloc++; // 할당한 워드 총 개수가 늘어났으니 갱신
+        }
+        b->val[b->wordlen++] = (WORD)carry; // 메모리가 충분하다면 바로 최상위 인덱스에 넣어주면 된다.
+    }
+}
 
 
 // 절댓값 비교함수. 왼쪽이 크면 1, 오른쪽이 크면 -1 같으면 0
@@ -393,45 +470,45 @@ bool bint_is_zero(const BINT* b) {
     return (b->wordlen == 1 && b->val[0] == 0);
 }
 
-//// 출력함수 내부용 곱셈 (BINT 곱셈 아님) -> 더이상 입력 인자가 문자열이 아니므로 캐스팅할 필요도 없어졌다. 혹여 10진수 입력경우 필요
-//void mul_bint_small(BINT* b, uint32_t m) { // m은 곱하는 수
-//    if (b == NULL) { // NULL포인터 체크
-//        fprintf(stderr, "Error: NULL BINT pointer in mul_bint_small.\n");
-//        exit(1);
-//    }
-//    if (b->val == NULL || b->alloc == 0) { // BINT 초기화상태 확인
-//        fprintf(stderr, "Error: BINT not properly initialized (val or alloc is NULL/0) in mul_bint_small.\n");
-//        exit(1);
-//    }
-//
-//    // 곱하는 수 m이 0이면 결과는 0
-//    if (m == 0) {
-//        set_bint_from_uint64(b, 0); // b를 0으로 설정
-//        return;
-//    }
-//    uint64_t carry = 0;
-//
-//    for (size_t i = 0; i < b->wordlen; ++i) { // 하위 워드부터 연산
-//        uint64_t prod = (uint64_t)b->val[i] * m + carry; // 64비트로 계산하여 오버플로우 방지 => product = 현재워드 * m + carry 형태
-//        b->val[i] = (WORD)(prod & 0xFFFFFFFF); // 하위 32비트 추출하고 
-//        carry = prod >> 32; // 캐리는 다음 워드로
-//    }
-//    // 루프가 다 끝났는데도 carry가 남아있는경우
-//    if (carry > 0) {
-//        if (b->wordlen == b->alloc) { // 현재 할당된 공간이 부족하면
-//            WORD* new_val = (WORD*)realloc(b->val, sizeof(WORD) * (b->alloc + 1)); // 워드 1개만큼 재할당을 해주는데
-//            // 실패시 예외처리
-//            if (new_val == NULL) {
-//                fprintf(stderr, "Error: Failed to reallocate memory in mul_bint_small.\n");
-//                exit(1);
-//            }
-//            b->val = new_val; // realloc 성공 시 새 주소 할당
-//            b->alloc++; // alloc 갱신해주기
-//        }
-//        b->val[b->wordlen++] = (WORD)carry; // 최상위 인덱스에 carry 별도로 저장
-//    }
-//    normalize_wordlen(b); // 최종적으로 비트 정제
-//}
+// 출력함수 내부용 곱셈 (BINT 곱셈 아님) -> 더이상 입력 인자가 문자열이 아니므로 캐스팅할 필요도 없어졌다. 혹여 10진수 입력경우 필요
+void mul_bint_small(BINT* b, uint32_t m) { // m은 곱하는 수
+    if (b == NULL) { // NULL포인터 체크
+        fprintf(stderr, "Error: NULL BINT pointer in mul_bint_small.\n");
+        exit(1);
+    }
+    if (b->val == NULL || b->alloc == 0) { // BINT 초기화상태 확인
+        fprintf(stderr, "Error: BINT not properly initialized (val or alloc is NULL/0) in mul_bint_small.\n");
+        exit(1);
+    }
+
+    // 곱하는 수 m이 0이면 결과는 0
+    if (m == 0) {
+        set_bint_from_uint64(b, 0); // b를 0으로 설정
+        return;
+    }
+    uint64_t carry = 0;
+
+    for (size_t i = 0; i < b->wordlen; ++i) { // 하위 워드부터 연산
+        uint64_t prod = (uint64_t)b->val[i] * m + carry; // 64비트로 계산하여 오버플로우 방지 => product = 현재워드 * m + carry 형태
+        b->val[i] = (WORD)(prod & 0xFFFFFFFF); // 하위 32비트 추출하고 
+        carry = prod >> 32; // 캐리는 다음 워드로
+    }
+    // 루프가 다 끝났는데도 carry가 남아있는경우
+    if (carry > 0) {
+        if (b->wordlen == b->alloc) { // 현재 할당된 공간이 부족하면
+            WORD* new_val = (WORD*)realloc(b->val, sizeof(WORD) * (b->alloc + 1)); // 워드 1개만큼 재할당을 해주는데
+            // 실패시 예외처리
+            if (new_val == NULL) {
+                fprintf(stderr, "Error: Failed to reallocate memory in mul_bint_small.\n");
+                exit(1);
+            }
+            b->val = new_val; // realloc 성공 시 새 주소 할당
+            b->alloc++; // alloc 갱신해주기
+        }
+        b->val[b->wordlen++] = (WORD)carry; // 최상위 인덱스에 carry 별도로 저장
+    }
+    normalize_wordlen(b); // 최종적으로 비트 정제
+}
 
 
 
