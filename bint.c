@@ -512,4 +512,48 @@ void mul_bint_small(BINT* b, uint32_t m) { // m은 곱하는 수
 
 
 
+void sub_bint(BINT** result, const BINT* a, const BINT* b) {
+    if (!result || !a || !b) {
+        fprintf(stderr, "Error: NULL BINT pointer in sub_bint.\n");
+        exit(1);
+    }
+
+   
+    BINT av = *a; av.is_negative = false; // 구조체 복사해서 절댓값으로
+    BINT bv = *b; bv.is_negative = false;
+
+    const int sa = a->is_negative ? 1 : 0;
+    const int sb = b->is_negative ? 1 : 0;
+    const int do_add = sa ^ sb;              
+    // 부호가 다른 두 수의 뺄셈은 절댓값으로 치환함 (sign bits xor = 1) 
+    // (+) - (-) -> (+) + |b|
+    // {-) - (+) -> (-)(|a| + |b|) 
+
+
+    if (do_add) {
+        add_unsigned(result, &av, &bv);
+        if (*result) (*result)->is_negative = ((*result)->wordlen == 0) ? false : (sa != 0); // 만약 0이면 양수로취급
+        // *result != NULL 이면 조건문이 실행되고, wordlen이 0인지의 여부가 bool으로 is_negative에 저장. 
+        // 간단히 wordlen이 0이면 부호를 양수로, 0이 아니면 a의 부호를 따라감
+        return;
+    }
+
+    // 부호가 같을 때는 절댓 값 비교하여 큰쪽에서 작은쪽을 빼주면 됨
+    int cmp = cmp_bint(&av, &bv);    // |a| ? |b|
+    const BINT* hi = (cmp >= 0) ? &av : &bv; // cmp로 high 와 low결정
+    const BINT* lo = (cmp >= 0) ? &bv : &av;
+
+    sub_unsigned(result, hi, lo);
+
+    
+    if (*result) {
+        if ((*result)->wordlen == 0) { // 마찬가지로 0인경우 양수처리
+            (*result)->is_negative = false;
+        }
+        else {
+            int neg = (cmp >= 0) ? sa : (sa ^ 1); // 절댓값 비교 결과 a가 크다면 a의 부호를, 아닌경우 반대
+            (*result)->is_negative = (neg != 0);
+        }
+    }
+}
 
