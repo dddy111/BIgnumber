@@ -217,34 +217,24 @@ static char* read_token_unbounded(FILE* in) {
 
 
 
-void add_bint_example(BINT* a, BINT* b) { // add 호출
+void print_add_bint(BINT* a, BINT* b) { // add 호출
     BINT* result = NULL;
-    add_bint(&result, a, b);  
+    add_bint(&result, a, b);
     printf("Result of addition: ");
     print_bint_hex(result);  
     free_bint(&result);      
 }
 
-
-
-void sub_bint_example(BINT* a, BINT* b) { // sub 호출
+void print_sub_bint(BINT* a, BINT* b) {
     BINT* result = NULL;
-    int cmp = cmp_bint(a, b);   // a가 크면 1, b가 크면 -1, 같으면 0
-
-    if (cmp >= 0) {
-        // a >= b : 그대로 a - b
-        sub_unsigned(&result, a, b);
-    }
-    else {
-        // a < b : b - a 계산 후 부호만 음수로
-        sub_unsigned(&result, b, a);
-        if (result) result->is_negative = true; 
-    }
-
+    sub_bint(&result, a, b);     
     printf("Result of subtraction: ");
-    print_bint_hex(result);
+    print_bint_hex(result);      
     free_bint(&result);
 }
+
+
+
 
 
 
@@ -353,8 +343,8 @@ int main() {
     }
 
     
-    add_bint_example(bint_a, bint_b);  
-    sub_bint_example(bint_a, bint_b);  
+    print_add_bint(bint_a, bint_b);  
+    print_sub_bint(bint_a, bint_b);  
     cmp_bint_example(bint_a, bint_b); 
 
     free_bint(&bint_a);
