@@ -40,7 +40,7 @@ void print_bint_hex(const BINT* bint);
 // 연산
 void add_bint(BINT** result, const BINT* a, const BINT* b);
 void add_unsigned(BINT** result, const BINT* a, const BINT* b);
-
+void sub_bint(BINT** result, const BINT* a, const BINT* b);
 void sub_unsigned(BINT** result, const BINT* a, const BINT* b);
 
 // 출력함수를 위한 내부 함수
