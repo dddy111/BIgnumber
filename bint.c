@@ -16,7 +16,10 @@ void normalize_wordlen(BINT* b) {
     }
     b->wordlen = i;  // 인덱스를 wordlen으로 취하게 하면 정제완료
 }
-
+// == > 일단 이 프로젝트 전반에서 0에 대한 표준은 wordlen이 "1"이면서 배열의 첫번째 값이 0일 것을 기준으로 함..
+// 이 함수는 normalize 대상의 길이가 1 이상일때만 작동하므로, wordlen이 0인 입력을 받으면 1의 길이를 보장해주지 않음.
+// wordlen == 0을 허용하게되면, for (ssize_t i = wordlen - 1; i >= 0; --i) 와 같은 코드에서 언더플로우가 발생함.
+// 때문에 길이보정은 호출하는 쪽에서 필수적으로 해주어야 한다.
 
 
 
@@ -511,7 +514,8 @@ void mul_bint_small(BINT* b, uint32_t m) { // m은 곱하는 수
 }
 
 
-
+// add의 최상위 함수 add_bint가 부호를 결정하는 방식은 if와 &연산을 이용해 ++/-- 는 덧셈으로, +-/-+는 뺄셈으로 치환하는 것이었음 (4회 개별분기)
+// 이 함수에서는 부호의 같고 다름을 sign bit의 xor으로 처리하여 구분
 void sub_bint(BINT** result, const BINT* a, const BINT* b) {
     if (!result || !a || !b) {
         fprintf(stderr, "Error: NULL BINT pointer in sub_bint.\n");
@@ -525,20 +529,20 @@ void sub_bint(BINT** result, const BINT* a, const BINT* b) {
     const int sa = a->is_negative ? 1 : 0;
     const int sb = b->is_negative ? 1 : 0;
     const int do_add = sa ^ sb;              
-    // 부호가 다른 두 수의 뺄셈은 절댓값으로 치환함 (sign bits xor = 1) 
+    // 부호가 다른 두 수의 뺄셈은 절댓값 덧셈으로 치환함 (sign bits xor = 1) 
     // (+) - (-) -> (+) + |b|
-    // {-) - (+) -> (-)(|a| + |b|) 
+    // {-) - (+) -> (-)(|a| + |b|)  
 
 
     if (do_add) {
         add_unsigned(result, &av, &bv);
-        if (*result) (*result)->is_negative = ((*result)->wordlen == 0) ? false : (sa != 0); // 만약 0이면 양수로취급
-        // *result != NULL 이면 조건문이 실행되고, wordlen이 0인지의 여부가 bool으로 is_negative에 저장. 
+        if (*result) (*result)->is_negative = bint_is_zero(*result) ? false : (sa != 0); // 만약 0이면 양수로취급
+        // *result != NULL 이면 조건문이 실행되고, 0인지의 여부가 bool으로 is_negative에 저장. 
         // 간단히 wordlen이 0이면 부호를 양수로, 0이 아니면 a의 부호를 따라감
         return;
     }
 
-    // 부호가 같을 때는 절댓 값 비교하여 큰쪽에서 작은쪽을 빼주면 됨
+    // 부호가 같을 때는 절댓값 비교하여 큰쪽에서 작은쪽을 빼주면 됨
     int cmp = cmp_bint(&av, &bv);    // |a| ? |b|
     const BINT* hi = (cmp >= 0) ? &av : &bv; // cmp로 high 와 low결정
     const BINT* lo = (cmp >= 0) ? &bv : &av;
@@ -547,7 +551,7 @@ void sub_bint(BINT** result, const BINT* a, const BINT* b) {
 
     
     if (*result) {
-        if ((*result)->wordlen == 0) { // 마찬가지로 0인경우 양수처리
+        if (bint_is_zero(*result)) { // 마찬가지로 0인경우 양수처리
             (*result)->is_negative = false;
         }
         else {
