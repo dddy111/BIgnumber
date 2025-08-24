@@ -160,6 +160,123 @@ static void run_256bit_add_tests(void) {
     printf("\n== 256-bit addition tests completed ==\n");
 }
 
+// 마찬가지로 최상위 워드를 이용해 테스트벡터 케이스를 통제
+// want_borrow: 1 -> A < B (borrow 발생), 0 → A > B (borrow 없음)   // A==B는 별도 케이스
+static void pick_msw_for_borrow(WORD A[8], WORD B[8], int want_borrow) {
+    if (want_borrow) { // A < B. borrow 발생 경우
+        A[7] = (WORD)(rand32() & 0x7FFFFFFF); // 더 큰 값을 고를 여유를 남기기위해 31비트 난수선택
+        WORD base = (WORD)(A[7] + 1u);  // B의 최상위워드 최솟값을 A[7]+1로 선택해 B[7] > A[7] 보장
+        B[7] = (WORD)(base + (rand32() % (0xFFFFFFFFu - base + 1u)));  // base ~ 0xFFFFFFFF 중 택 1
+    }
+    else { // A > B
+        B[7] = (WORD)(rand32() & 0x7FFFFFFF);
+        WORD base = (WORD)(B[7] + 1u);
+        A[7] = (WORD)(base + (rand32() % (0xFFFFFFFFu - base + 1u)));
+    }
+}
+
+// 
+static void gen_no_internal_borrow(WORD A[8], WORD B[8]) {
+    for (int i = 0; i < 7; ++i) {
+        B[i] = (WORD)rand32(); // B는 랜덤으로 잡음.
+        uint32_t room = 0xFFFFFFFFu - B[i]; // A[i] = B[i] + delta 꼴이니 
+        // B[i] + delta <= 0xFFFFFFFF 여야함. 
+        // 다시 delta <= 0xFFFFFFFF - B[i].
+        uint32_t delta = (room == 0) ? 0u : (rand32() % (room + 1u)); // 0~room
+        A[i] = (WORD)(B[i] + delta); // A[i] >= B[i]
+    }
+    // 최상위 워드는 반드시 A[7] > B[7]
+    B[7] = (WORD)(rand32() & 0x7FFFFFFF);
+    uint32_t room7 = 0xFFFFFFFFu - B[7];
+    uint32_t delta7 = (room7 <= 1u) ? 1u : (1u + (rand32() % room7)); // 최소 1
+    // 다른 워드들이 A[i] >= B[i] 기 때문에 최상위워드까지 A[i] >= B[i]이면 A == B가됨
+    A[7] = (WORD)(B[7] + delta7);
+}
+
+// 테스트 케이스 생성하기 -> {1, 1, 1, 0, 0}
+static void gen_256_sub_vector_borrow(WORD A[8], WORD B[8], int case_id) {
+    // 기본적으로 하위 7워드는 랜덤
+    gen_lower_words(A, B);
+
+    switch (case_id) {
+    case 0: // borrow 1
+    case 1: // borrow 1
+    case 2: // borrow 1 (값만 다름)
+        pick_msw_for_borrow(A, B, /*want_borrow=*/1);
+        break;
+        
+    case 3: // borrow 0 (어떤 워드에서도 borrow가 발생하지 않음)
+        gen_no_internal_borrow(A, B); // 모든 워드에서 A[i] >= B[i], 최상위 워드는 A[7] > B[7]
+        break;
+
+    case 4: // borrow 0 :  A == B인 경우
+        for (int i = 0; i < 8; ++i) { A[i] = (WORD)rand32(); B[i] = A[i]; }
+        break;
+    }
+}
+
+// WORD[8] → BINT
+static void words_to_bint(BINT** out, const WORD w[8]) {
+    set_bint_256(out, w); // 내부에서 normalize
+}
+
+
+static void run_256bit_sub_tests(void) {
+    srand(12345); // 시드고정 (덧셈의 재현성 그거)
+
+    // 시나리오 {1,1,1,0,0}
+    int targets[5] = { 1, 1, 1, 0, 0 };
+
+    for (int t = 0; t < 5; ++t) {
+        WORD A[8] = { 0 }, B[8] = { 0 };
+        gen_256_sub_vector_borrow(A, B, t);
+
+        // BINT로 캐스팅
+        BINT* a = NULL, * b = NULL, * diff = NULL;
+        words_to_bint(&a, A);
+        words_to_bint(&b, B);
+
+        // 사전 검증 -> unsigned compare
+        // A < B  → 최종 borrow 1
+        // A >= B → 최종 borrow 0
+        int cmp = cmp_bint(a, b);  // -1,0,+1
+        int expected_borrow = (cmp < 0) ? 1 : 0;
+
+        if (expected_borrow != targets[t]) {
+            fprintf(stderr, "[gen mismatch] case=%d expected_borrow=%d cmp=%d\n",
+                t, targets[t], cmp);
+            // 실패 시 바로 정리 후 중단
+            free_bint(&a); free_bint(&b); free_bint(&diff);
+            exit(1);
+        }
+
+        // 연산
+        sub_bint(&diff, a, b);
+
+        // 출력
+        printf("\n[SubBorrow Case %d] target borrow=%d\n", t + 1, targets[t]);
+        print_words_hex("A =", A);
+        print_words_hex("B =", B);
+        printf("Result of subtraction: ");
+        print_bint_hex(diff);
+
+        // 결과 일관성 검증:
+        // - borrow=1  -> 결과 음수여야 함
+        // - borrow=0  -> 결과가 0이거나 양수여야 함
+        if (targets[t] == 1) {
+            assert(!bint_is_zero(diff) && diff->is_negative == true);
+        }
+        else {
+            assert(diff->is_negative == false); // 0이거나 양수
+            // case 4는 정확히 0이어야 함
+            if (t == 4) assert(bint_is_zero(diff));
+        }
+
+        free_bint(&a); free_bint(&b); free_bint(&diff);
+    }
+    printf("\n== 256-bit subtraction tests (borrow) completed ==\n");
+}
+
 // gpt피셜 "입력을 사실상 무제한으로 받을 수 있는 함수"
 static char* read_token_unbounded(FILE* in) {
     // note : FILE 구조체에 대하여:
@@ -293,6 +410,14 @@ int main() {
 
     test_sub_unsigned_basic();
     printf("[OK] test_sub_unsigned_basic passed\n");
+
+    test_sub_bint_sign_cases();
+    printf("[OK] test_sub_bint_sign_cases passed\n");
+
+    test_sub_bint_zero_results();
+    printf("[OK] test_sub_bint_zero_results passed\n");
+
+
     
     //// 배열 뜯어 어디가 문제인지 확인해보기
     //BINT* a = NULL, * b = NULL, * res = NULL;
@@ -314,6 +439,8 @@ int main() {
     BINT* bint_b = NULL;
     
     run_256bit_add_tests();
+    run_256bit_sub_tests();
+
 
     printf("Input for first BINT (hex: 0x..., or decimal):\n");
     char* tok_a = read_token_unbounded(stdin);
