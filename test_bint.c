@@ -317,4 +317,98 @@ void test_sub_unsigned_with_borrow(void) {
 
     free_bint(&a); free_bint(&b); free_bint(&res);
 }
+// 간단하게 뺄셈 부호테스트
+void test_sub_bint_sign_cases(void) {
+    BINT* a = NULL, * b = NULL, * r = NULL;
+
+    // (+a) - (+b) : a > b  => 양수
+    WORD wa1[] = { 0x00000005 }, wb1[] = { 0x00000002 };
+    set_bint_from_word_array(&a, wa1, 1);
+    set_bint_from_word_array(&b, wb1, 1);
+    sub_bint(&r, a, b);
+    assert(r->wordlen == 1 && r->val[0] == 0x00000003);
+    assert(r->is_negative == false);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+
+    // (+a) - (+b) : a < b  => 음수
+    WORD wa2[] = { 0x00000002 }, wb2[] = { 0x00000005 };
+    set_bint_from_word_array(&a, wa2, 1);
+    set_bint_from_word_array(&b, wb2, 1);
+    sub_bint(&r, a, b);
+    assert(r->wordlen == 1 && r->val[0] == 0x00000003);
+    assert(r->is_negative == true);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+
+    // (-a) - (-b) : |a| > |b|  => 음수
+    WORD wa3[] = { 0x00000007 }, wb3[] = { 0x00000005 };
+    set_bint_from_word_array(&a, wa3, 1);
+    set_bint_from_word_array(&b, wb3, 1);
+    a->is_negative = true; b->is_negative = true;
+    sub_bint(&r, a, b); // (-7) - (-5) = -2
+    assert(r->wordlen == 1 && r->val[0] == 0x00000002);
+    assert(r->is_negative == true);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+
+    // (-a) - (-b) : |a| < |b|  => 양수
+    WORD wa4[] = { 0x00000005 }, wb4[] = { 0x00000007 };
+    set_bint_from_word_array(&a, wa4, 1);
+    set_bint_from_word_array(&b, wb4, 1);
+    a->is_negative = true; b->is_negative = true;
+    sub_bint(&r, a, b); // (-5) - (-7) = +2
+    assert(r->wordlen == 1 && r->val[0] == 0x00000002);
+    assert(r->is_negative == false);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+
+    // (+a) - (-b) = a + |b|  => 양수
+    WORD wa5[] = { 0x00000002 }, wb5[] = { 0x00000005 };
+    set_bint_from_word_array(&a, wa5, 1);
+    set_bint_from_word_array(&b, wb5, 1);
+    b->is_negative = true;
+    sub_bint(&r, a, b); // 2 - (-5) = 7
+    assert(r->wordlen == 1 && r->val[0] == 0x00000007);
+    assert(r->is_negative == false);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+
+    // (-a) - (+b) = -(a + b)  => 음수
+    WORD wa6[] = { 0x00000002 }, wb6[] = { 0x00000005 };
+    set_bint_from_word_array(&a, wa6, 1);
+    set_bint_from_word_array(&b, wb6, 1);
+    a->is_negative = true;
+    sub_bint(&r, a, b); // -2 - 5 = -7
+    assert(r->wordlen == 1 && r->val[0] == 0x00000007);
+    assert(r->is_negative == true);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+}
+// 0의 부호가 올바르게 양수로 처리되는지까지 확인해야한다.
+void test_sub_bint_zero_results(void) {
+    BINT* a = NULL, * b = NULL, * r = NULL;
+
+    // (+a) - (+a) = 0  => bint_is_zero == true, 부호는 양수
+    WORD wz1[] = { 0x00001234 };
+    set_bint_from_word_array(&a, wz1, 1);
+    set_bint_from_word_array(&b, wz1, 1);
+    sub_bint(&r, a, b);
+    assert(bint_is_zero(r));
+    assert(r->is_negative == false);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+
+    // (-a) - (-a) = 0  => 동일
+    WORD wz2[] = { 0x00ABCDEF };
+    set_bint_from_word_array(&a, wz2, 1);
+    set_bint_from_word_array(&b, wz2, 1);
+    a->is_negative = true; b->is_negative = true;
+    sub_bint(&r, a, b);
+    assert(bint_is_zero(r));
+    assert(r->is_negative == false);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+
+    // 0 - 0 = 0
+    WORD wz3[] = { 0x00000000 };
+    set_bint_from_word_array(&a, wz3, 1);
+    set_bint_from_word_array(&b, wz3, 1);
+    sub_bint(&r, a, b);
+    assert(bint_is_zero(r));
+    assert(r->is_negative == false);
+    free_bint(&a); free_bint(&b); free_bint(&r);
+}
 
